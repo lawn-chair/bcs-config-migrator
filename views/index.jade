@@ -1,20 +1,23 @@
 extends layout
 
 block content
-  div.container
-    h1= title
+    div.container
+        h1= title
     
-    form
-        fieldset
-            legend BCS Migration Tool
+        form
+            fieldset
+                legend BCS Migration Tool
 
-            div.form-group
-                label(for='bcs') BCS 4.0 Device:
-                input.form-control(type='url', id='bcs', placeholder='http://192.168.1.5/')
-                i.icon-ok.pull-right(id='bcs-verify')
+                div.form-group
+                    label.control-label(for='bcs') BCS 4.0 Device:
+                    input.form-control(type='url', id='bcs', placeholder='http://192.168.1.5/')
+                    i.icon-ok.pull-right.checkmark
 
-            div.form-group
-                label(for='configFile') BCS 3.x Configuration File:
-                input.form-control(type='file', id='configFile')
+                div.form-group
+                    label.control-label(for='configFile') BCS 3.x Configuration File:
+                    input.invalid.form-control(type='file', id='configFile')
+                    i.icon-ok.pull-right.checkmark
 
-            button.btn.btn-primary.disabled Begin Migration
+                button.btn.btn-primary.disabled Begin Migration
+
+    script(src='javascripts/index.js')
