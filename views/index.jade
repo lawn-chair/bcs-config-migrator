@@ -4,20 +4,28 @@ block content
     div.container
         h1= title
     
-        form
+        form(action='/migrate', method="post", enctype="multipart/form-data")
             fieldset
                 legend BCS Migration Tool
 
                 div.form-group
                     label.control-label(for='bcs') BCS 4.0 Device:
-                    input.form-control(type='url', id='bcs', placeholder='http://192.168.1.5/')
+                    input.form-control(type='url', id='bcs', name='bcs', placeholder='http://192.168.1.5/')
                     i.icon-ok.pull-right.checkmark
 
                 div.form-group
                     label.control-label(for='configFile') BCS 3.x Configuration File:
-                    input.invalid.form-control(type='file', id='configFile')
+                    input.form-control(type='file', id='configFile', name='configFile')
                     i.icon-ok.pull-right.checkmark
 
-                button.btn.btn-primary.disabled Begin Migration
+                button.btn.btn-primary.disabled(id='migrate') Begin Migration
+
+    .modal.fade(id='dialog')
+        .modal-dialog
+            .modal-content
+                .modal-header
+                    button.close(data-dismiss='modal', aria-hidden='true') &times;
+                    h4.modal-title Migrating Configuration
+                .modal-body
 
     script(src='javascripts/index.js')
