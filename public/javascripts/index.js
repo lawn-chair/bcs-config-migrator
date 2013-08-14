@@ -73,11 +73,11 @@ $( document ).ready( function () {
         $('form').ajaxSubmit({success: function (data) {
             if(data.type !== 'unknown') {
                
-                dialog.append("Found valid <strong>" + data.type + "</strong> configuration.<br>");
+                dialog.append('<div class="alert alert-success">Found valid <strong>' + data.type + '</strong> configuration.</div>');
                
                 if(data.device !== bcsVersion) {
-                    dialog.append("<div>Device mismatch.  Config for <strong>" + data.device + 
-                    "</strong>.  Device <strong>" + bcsVersion + "</strong>. Loading anyway, may result in errors.");
+                    dialog.append('<div class="alert alert-warning">Device mismatch.  Loading anyway, may result in errors. <ul><li>Config file version: <strong>' + data.device + 
+                    '</strong></li><li>Device version: <strong>' + bcsVersion + '</strong></li></div>');
                 }
                 
                 dialog.append($('#progress').html());
@@ -101,6 +101,8 @@ $( document ).ready( function () {
                    updateDevice(dialog, data.config);
                 }
                
+            } else {
+                dialog.append('<div class="alert alert-danger">Invalid configuration file found</div>');
             }
         }});
     });
