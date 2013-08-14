@@ -111,7 +111,11 @@ var updateDevice = function(dialog, config) {
     var successBar = dialog.find('.progress-bar-success')[0];
     var dangerBar = dialog.find('.progress-bar-danger')[0];
     
-    config.forEach(function (element) {
+    /*
+        Posting more than 2 states at one time causes the BCS to run out of memory.
+        Thank you, async.
+    */
+    async.eachLimit(config, 2, function (element, next) {
         var id = "elem-" + element.endpoint.replace(/\//g, '-');
         
         dialog.append('<div class="row" id="' + id + '"><div class="col-6 col-lg-8">Updating ' + element.endpoint + ' ... </div></div>');
@@ -121,11 +125,14 @@ var updateDevice = function(dialog, config) {
             dialog.find('#' + id).append('<div class="col-6 col-lg-4"><span class="label label-success">Done</span></div>');
             $(successBar).attr('aria-valuenow', parseFloat($(successBar).attr('aria-valuenow')) + percent );
             $(successBar).css('width', $(successBar).attr('aria-valuenow') + '%');
+            next();
         })
         .fail(function () {
             dialog.find('#' + id).append('<div class="col-6 col-lg-4"><span class="label label-danger">Failed</span></div>');
             $(dangerBar).attr('aria-valuenow', parseFloat($(dangerBar).attr('aria-valuenow')) + percent );
             $(dangerBar).css('width', $(dangerBar).attr('aria-valuenow') + '%');
+            next();
         });
+        
     });
 };
