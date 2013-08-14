@@ -18,6 +18,8 @@ exports.migrate = function(req, res){
         if(fileType === 'system')
         {
             _config = parseSystemFile(elements);
+        } else if(fileType === 'process') {
+            _config = parseProcessFile(elements);
         }
         
         res.json({
@@ -29,16 +31,18 @@ exports.migrate = function(req, res){
     
 };
 
+var booleanElement = function (n) {
+    return parseInt(n) ? true : false;
+};
+
 var parseSystemFile = function(elements) {
     var ret = [];
     
-    var booleanElement = function (n) {
-        return parseInt(n) ? true : false;
-    }
     /*
         Tell the client which API calls will be necessary to restore the config
         Skip: 
             network (could cause loss of connectivity)
+            datalog (not yet implemented in API)
         
     */
     
@@ -56,7 +60,7 @@ var parseSystemFile = function(elements) {
             'alarm_to_reg10': booleanElement(elements[231]),
             'require_auth': booleanElement(elements[188])
         }
-    })
+    });
     
     for(var i = 0; i < 18; i++) {
         ret.push({
@@ -92,6 +96,16 @@ var parseSystemFile = function(elements) {
                    parseFloat(elements[coefficient + i + 8]) * 1e-10
                    ]
            }
+        });
+    }
+    
+    for(i = 0; i < 8; i++) {
+        ret.push({
+            endpoint: 'process/' + i,
+            data: {
+                'run_on_startup': parseInt(elements[197 + (i % 4)]) & (1 << (i / 4)) ? true: false,
+
+            }
         });
     }
     
@@ -243,9 +257,54 @@ var parseSystemFile = function(elements) {
                     getSlot(i, 4)
                     ]
             }
-        })
+        });
     }
     
-
     return ret
-}
+};
+
+var parseProcessFile = function (elements) {
+    var ret = [];
+    
+    ret.push({
+        endpoint: 'process/:id',
+        data: {
+            name: elements[1].trim()
+        }
+    });
+    
+    for(i = 0; i < 4; i++) {
+        ret.push({
+            endpoint: 'process/:id/win/' + i,
+            data: {
+                name: elements[14 + i].trim()
+            }
+        });
+        
+        ret.push({
+            endpoint: 'process/:id/timer/' + i,
+            data: {
+                name: elements[10 + i].trim()
+            }
+        });
+    }
+    
+    for(i = 0; i < 8; i++) {
+        ret.push({
+            endpoint: 'process/:id/state/' + i,
+            data: {
+                name: elements[2 + i].trim(),
+                ramp: {
+                    enable: booleanElement(elements[130 + (i * 124)]),
+                    output: parseInt(elements[131 + (i * 124)]),
+                    start: parseInt(elements[1029 + (i * 32)]),
+                    end: parseInt(elements[1039 + (i * 32)]),
+                    time: parseInt(elements[1040 + (i * 32)])
+                },
+                'state_alarm': booleanElement(elements[133 + (i * 124)]),
+                'email_alarm': booleanElement(elements[138 + (1 * 124)])    
+            }
+        });
+    }
+    return ret;
+};

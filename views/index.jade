@@ -28,4 +28,18 @@ block content
                     h4.modal-title Migrating Configuration
                 .modal-body
 
+
+    div#process-selector(style='display:none')
+        form.form-inline
+            fieldset
+                select.form-control(id='process', name='process')
+
+                button.btn.btn-primary(id='update-process') Update Process
+        
+
+    div#progress(style='display:none')
+        .progress
+            .progress-bar.progress-bar-success(style='width: 0%', role='progressbar', aria-valuenow='0')
+            .progress-bar.progress-bar-danger(style='width: 0%', role='progressbar', aria-valuenow='0')
+
     script(src='javascripts/index.js')

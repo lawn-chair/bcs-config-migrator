@@ -16,3 +16,7 @@ div.has-success i {
 div.has-error i {
   color: #f00;
 }
+select#process {
+  width: 13em;
+  margin-right: 5px;
+}
