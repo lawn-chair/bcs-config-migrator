@@ -273,7 +273,7 @@ var parseProcessFile = function (elements) {
         }
     });
     
-    for(i = 0; i < 4; i++) {
+    for(var i = 0; i < 4; i++) {
         ret.push({
             endpoint: 'process/:id/win/' + i,
             data: {
@@ -302,9 +302,62 @@ var parseProcessFile = function (elements) {
                     time: parseInt(elements[1040 + (i * 32)])
                 },
                 'state_alarm': booleanElement(elements[133 + (i * 124)]),
-                'email_alarm': booleanElement(elements[138 + (1 * 124)])    
+                'email_alarm': booleanElement(elements[138 + (1 * 124)]),
+                'exit_conditions': parseExitConditions(elements, i)
             }
         });
     }
     return ret;
 };
+
+var parseExitConditions = function (elements, state) {
+    var ret = [];
+    
+    for(var i = 0; i < 4; i++) {
+        var ec_source = getECSource(elements, state, i);
+        ret.push({
+            'enabled': ec_source !== 0 ? true : false,
+            'source_type': ec_source,
+            'source_number': getECSourceNumber(elements, state, i, ec_source)
+        });
+    }
+    return ret;
+};
+
+
+var getECSource = function (elements, state, ec) {
+    if(elements.slice(50 + (ec * 4) + (state * 124), 54 + (ec * 4) + (state * 124)).reduce(function (a, b) { return a + b }) > 0) {
+        
+        return 1; // Temp
+        
+    } else if (elements.slice(66 + (ec * 4) + (state * 124), 70 + (ec * 4) + (state * 124)).reduce(function (a, b) { return a + b }) > 0) {
+        
+        return 2; // Time
+        
+    } else if (elements.slice(82 + (ec * 4) + (state * 124), 86 + (ec * 4) + (state * 124)).reduce(function (a, b) { return a + b }) > 0) {
+        
+        return 3; // Din
+        
+    } else if (elements.slice(98 + (ec * 4) + (state * 124), 102 + (ec * 4) + (state * 124)).reduce(function (a, b) { return a + b }) > 0) {
+        
+        return 4; // Win
+    }
+    
+    return 0; // Unused
+};
+
+var getECSourceNumber = function (elements, state, ec, type) {
+    switch(type) {
+        case 0:
+            return 0;
+        case 1:
+            for(var i = 0; i < 4; i++) {
+                if(parseInt(elements[50 + i + (ec * 4) + (state * 124)]) & 1) {
+                    return i;
+                } else if(parseInt(elements[50 + i + (ec * 4) + (state * 124)]) & 2) {
+                    return i + 4;
+                }
+            }
+        // need cases 2-4
+    }
+}
