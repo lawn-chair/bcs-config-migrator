@@ -318,7 +318,10 @@ var parseExitConditions = function (elements, state) {
         ret.push({
             'enabled': ec_source !== 0 ? true : false,
             'source_type': ec_source,
-            'source_number': getECSourceNumber(elements, state, i, ec_source)
+            'source_number': getECSourceNumber(elements, state, i, ec_source),
+            'next_state': parseInt(elements[114 + i + (state * 124)]),
+            'condition': parseInt(elements[126 + i + (state * 124)]),
+            'value': getECValue(elements, state, i, ec_source)
         });
     }
     return ret;
@@ -358,6 +361,43 @@ var getECSourceNumber = function (elements, state, ec, type) {
                     return i + 4;
                 }
             }
-        // need cases 2-4
+            break;
+        case 2:
+            for(i = 0; i < 4; i++) {
+                if(parseInt(elements[66 + i + (ec * 4) + (state * 124)]) === 1) {
+                    return i;
+                }
+            }
+            break;
+        case 3:
+            for(i = 0; i < 4; i++) {
+                if(parseInt(elements[82 + i + (ec * 4) + (state * 124)]) & 1) {
+                    return i;
+                } else if(parseInt(elements[82 + i + (ec * 4) + (state * 124)]) & 2) {
+                    return i + 4;
+                }
+            }
+            break;
+        case 4:
+            for(i = 0; i < 4; i++) {
+                if(parseInt(elements[98 + i + (ec * 4) + (state * 124)]) === 1) {
+                    return i;
+                }
+            }
     }
+}
+
+var getECValue = function (elements, state, ec, type) {
+    switch(type) {
+        case 0:
+        case 4:
+            return 0;
+        case 1:
+            return parseInt(elements[1020 + ec + (state * 32)]);
+        case 2:
+            return parseInt(elements[1021 + ec + (state * 32)]);
+        case 3:
+            return parseInt(elements[118 + ec + (state * 124)]);
+    }
+    return 0;
 }
