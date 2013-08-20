@@ -303,12 +303,28 @@ var parseProcessFile = function (elements) {
                 },
                 'state_alarm': booleanElement(elements[133 + (i * 124)]),
                 'email_alarm': booleanElement(elements[138 + (1 * 124)]),
-                'exit_conditions': parseExitConditions(elements, i)
+                'exit_conditions': parseExitConditions(elements, i),
+                'timers': parseTimers(elements, i)
             }
         });
     }
     return ret;
 };
+
+var parseTimers = function(elements, state) {
+    var ret = [];
+    
+    for(var i = 0; i < 4; i++) {
+        ret.push({
+            'used': elements[36 + i + (state * 124)] > 0 ? true : false,
+            'count_up': elements[40 + i + (state * 124)] > 0 ? true : false,
+            'preserve': elements[134 + (state * 124)] & (1 << i) ? true : false,
+            'init': elements[1010 + i + (state * 32)]
+        });
+    }
+    
+    return ret;
+}
 
 var parseExitConditions = function (elements, state) {
     var ret = [];
@@ -395,7 +411,7 @@ var getECValue = function (elements, state, ec, type) {
         case 1:
             return parseInt(elements[1020 + ec + (state * 32)]);
         case 2:
-            return parseInt(elements[1021 + ec + (state * 32)]);
+            return parseInt(elements[1024 + ec + (state * 32)]);
         case 3:
             return parseInt(elements[118 + ec + (state * 124)]);
     }
