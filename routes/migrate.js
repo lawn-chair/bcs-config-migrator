@@ -304,7 +304,8 @@ var parseProcessFile = function (elements) {
                 'state_alarm': booleanElement(elements[133 + (i * 124)]),
                 'email_alarm': booleanElement(elements[138 + (1 * 124)]),
                 'exit_conditions': parseExitConditions(elements, i),
-                'timers': parseTimers(elements, i)
+                'timers': parseTimers(elements, i),
+                'output_controllers': parseOutputControllers(elements, i)
             }
         });
     }
@@ -316,10 +317,10 @@ var parseTimers = function(elements, state) {
     
     for(var i = 0; i < 4; i++) {
         ret.push({
-            'used': elements[36 + i + (state * 124)] > 0 ? true : false,
-            'count_up': elements[40 + i + (state * 124)] > 0 ? true : false,
-            'preserve': elements[134 + (state * 124)] & (1 << i) ? true : false,
-            'init': elements[1010 + i + (state * 32)]
+            'used': booleanElement(elements[36 + i + (state * 124)]),
+            'count_up': booleanElement(elements[40 + i + (state * 124)]),
+            'preserve': booleanElement(elements[134 + (state * 124)] & (1 << i)),
+            'init': parseInt(elements[1010 + i + (state * 32)])
         });
     }
     
@@ -416,4 +417,33 @@ var getECValue = function (elements, state, ec, type) {
             return parseInt(elements[118 + ec + (state * 124)]);
     }
     return 0;
+}
+
+var parseOutputControllers = function (elements, state) {
+    var ret = [];
+
+    for(i = 0; i < 6; i++) {
+        var sp;
+        switch(parseInt(elements[18 + i + (state * 124)])) {
+            case 0: // FALLTHROUGH
+            case 1:
+                sp = parseInt(elements[44 + i + (state * 124)]) ? 1 : 0;
+                break;
+            case 2:
+                sp = parseInt(elements[44 + i + (state * 124)]);
+                break;
+            case 3:
+            case 4:
+                sp = parseInt(elements[1014 + i + (state * 32)])
+        }
+        
+        // TODO: input and swing should be set in system config area
+        ret.push({
+            mode: parseInt(elements[18 + i + (state * 124)]),
+            input: parseInt(elements[31 + i + (state * 32)]),
+            setpoint: sp
+        })
+    }
+    
+    return ret;
 }
