@@ -114,8 +114,8 @@ var updateDevice = function(dialog, config) {
     var dangerBar = dialog.find('.progress-bar-danger')[0];
     
     /*
-        Posting more than 2 states at one time causes the BCS to run out of memory.
-        Thank you, async.
+        Posting more than 1 state at one time causes the BCS to run out of memory.
+        Thank you async!
     */
     async.eachLimit(config, 2, function (element, next) {
         var id = "elem-" + element.endpoint.replace(/\//g, '-');

@@ -109,6 +109,25 @@ var parseSystemFile = function(elements) {
         });
     }
     
+    for(i = 0; i < 8; i++) {
+        for(var j = 0; j < 8; j++) {
+            var outputControllers = [];
+            
+            for(var oc = 0; oc < 6; oc++) {
+                outputControllers[oc] = {
+                    heat: booleanElement(elements[175 + oc]),
+                    input: parseInt(elements[169 + oc]),
+                    swing: parseInt(elements[274 + oc])
+                }
+            }
+            
+            ret.push({
+                endpoint: 'process/' + i + "/state/" + j + '/output_controllers',
+                data: outputControllers
+            });
+        }
+    }
+    
     for(i = 0; i < 6; i++) {
         ret.push({
            endpoint: 'pid/' + i,
@@ -135,8 +154,8 @@ var parseSystemFile = function(elements) {
                 data: {
                     outputs: [0],
                     igniter: 5,
-                    holdoff: parseInt(elements[227]),
-                    time: parseInt(elements[228])
+                    holdoff: parseInt(elements[227]) * 10,
+                    time: parseInt(elements[228]) * 10
                 }
             });
             break;
@@ -146,8 +165,8 @@ var parseSystemFile = function(elements) {
                 data: {
                     outputs: [0, 1],
                     igniter: 5,
-                    holdoff: parseInt(elements[227]),
-                    time: parseInt(elements[228])
+                    holdoff: parseInt(elements[227]) * 10,
+                    time: parseInt(elements[228]) * 10
                 }
             });
             break;
@@ -157,8 +176,8 @@ var parseSystemFile = function(elements) {
                 data: {
                     outputs: [0, 1, 2],
                     igniter: 5,
-                    holdoff: parseInt(elements[227]),
-                    time: parseInt(elements[228])
+                    holdoff: parseInt(elements[227]) * 10,
+                    time: parseInt(elements[228]) * 10
                 }
             });
             break;
@@ -168,8 +187,8 @@ var parseSystemFile = function(elements) {
                 data: {
                     outputs: [0],
                     igniter: 3,
-                    holdoff: parseInt(elements[227]),
-                    time: parseInt(elements[228])
+                    holdoff: parseInt(elements[227]) * 10,
+                    time: parseInt(elements[228]) * 10
                 }
             });
             ret.push({
@@ -177,8 +196,8 @@ var parseSystemFile = function(elements) {
                 data: {
                     outputs: [1],
                     igniter: 4,
-                    holdoff: parseInt(elements[227]),
-                    time: parseInt(elements[228])
+                    holdoff: parseInt(elements[227]) * 10,
+                    time: parseInt(elements[228]) * 10
                 }
             });
             ret.push({
@@ -186,8 +205,8 @@ var parseSystemFile = function(elements) {
                 data: {
                     outputs: [2],
                     igniter: 5,
-                    holdoff: parseInt(elements[227]),
-                    time: parseInt(elements[228])
+                    holdoff: parseInt(elements[227]) * 10,
+                    time: parseInt(elements[228]) * 10
                 }
             });
             break;
@@ -197,9 +216,8 @@ var parseSystemFile = function(elements) {
                 data: {
                     outputs: [2],
                     igniter: null,
-                    reg: 15,
-                    holdoff: parseInt(elements[227]),
-                    time: parseInt(elements[228])
+                    holdoff: parseInt(elements[227]) * 10,
+                    time: parseInt(elements[228]) * 10
                 }
             });
             //FALLTHROUGH!
@@ -210,9 +228,8 @@ var parseSystemFile = function(elements) {
                 data: {
                     outputs: [1],
                     igniter: null,
-                    reg: 14,
-                    holdoff: parseInt(elements[227]),
-                    time: parseInt(elements[228])
+                    holdoff: parseInt(elements[227]) * 10,
+                    time: parseInt(elements[228]) * 10
                 }
             });
             //FALLTHROUGH!
@@ -223,9 +240,8 @@ var parseSystemFile = function(elements) {
                 data: {
                     outputs: [0],
                     igniter: null,
-                    reg: 13,
-                    holdoff: parseInt(elements[227]),
-                    time: parseInt(elements[228])
+                    holdoff: parseInt(elements[227]) * 10,
+                    time: parseInt(elements[228]) * 10
                 }
             });
             break;
@@ -303,10 +319,18 @@ var parseProcessFile = function (elements) {
                 },
                 'state_alarm': booleanElement(elements[133 + (i * 124)]),
                 'email_alarm': booleanElement(elements[138 + (1 * 124)]),
-                'exit_conditions': parseExitConditions(elements, i),
-                'timers': parseTimers(elements, i),
-                'output_controllers': parseOutputControllers(elements, i)
+                'timers': parseTimers(elements, i)
             }
+        });
+        
+        ret.push({
+            endpoint: 'process/:id/state/' + i + '/exit_conditions',
+            data: parseExitConditions(elements, i)
+        });
+        
+        ret.push({
+            endpoint: 'process/:id/state/' + i + '/output_controllers',
+            data: parseOutputControllers(elements, i)
         });
     }
     return ret;
@@ -432,12 +456,11 @@ var parseOutputControllers = function (elements, state) {
             case 2:
                 sp = parseInt(elements[44 + i + (state * 124)]);
                 break;
-            case 3:
+            case 3: // FALLTHROUGH
             case 4:
                 sp = parseInt(elements[1014 + i + (state * 32)])
         }
         
-        // TODO: input and swing should be set in system config area
         ret.push({
             mode: parseInt(elements[18 + i + (state * 124)]),
             input: parseInt(elements[31 + i + (state * 32)]),
