@@ -72,7 +72,7 @@ grunt.initConfig({
 		},
 		index: {
 			files: {
-				'<%= dirs.dest %>/js/index.js': ['<%= dirs.src %>/js/index.js'],
+				'<%= dirs.dest %>/js/index.js': ['<%= dirs.src %>/js/migrate.js', '<%= dirs.src %>/js/index.js'],
 				'<%= dirs.dest %>/js/library.js': ['<%= dirs.vendor %>/js/*.js']
 			}
 		}
