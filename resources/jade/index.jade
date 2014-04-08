@@ -2,23 +2,20 @@ extends layout
 
 block content
     div.container
-        h1 BCS Migration Tool
+        h1 BCS 3.x Migration Tool
     
         form(action='/migrate', method="post", enctype="multipart/form-data")
-            fieldset
-                legend BCS Migration Tool
+            div.form-group
+                label.control-label(for='bcs') BCS 4.0 Device:
+                input.form-control(type='url', id='bcs', name='bcs', data-name='bcs', placeholder='http://192.168.1.5/')
+                i.icon-ok.pull-right.checkmark
 
-                div.form-group
-                    label.control-label(for='bcs') BCS 4.0 Device:
-                    input.form-control(type='url', id='bcs', name='bcs', data-name='bcs', placeholder='http://192.168.1.5/')
-                    i.icon-ok.pull-right.checkmark
+            div.form-group
+                label.control-label(for='configFile') BCS 3.x Configuration File:
+                input.form-control(type='file', id='configFile', name='configFile')
+                i.icon-ok.pull-right.checkmark
 
-                div.form-group
-                    label.control-label(for='configFile') BCS 3.x Configuration File:
-                    input.form-control(type='file', id='configFile', name='configFile')
-                    i.icon-ok.pull-right.checkmark
-
-                button.btn.btn-primary.disabled(id='migrate') Begin Migration
+            button.btn.btn-primary.disabled(id='migrate') Begin Migration
 
     .modal.fade(id='dialog')
         .modal-dialog
