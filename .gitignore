@@ -1,1 +1,5 @@
 node_modules
+_site
+site/index.html
+site/js/
+site/css/
