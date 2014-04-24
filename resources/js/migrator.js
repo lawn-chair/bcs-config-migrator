@@ -63,8 +63,7 @@ var Migrator = (function () {
             endpoint: 'system',
             data: {
                 celsius: booleanElement(elements[203]),
-                'alarm_to_reg10': booleanElement(elements[231]),
-                'require_auth': booleanElement(elements[188])
+                'alarm_to_reg10': booleanElement(elements[231])
             }
         });
         
