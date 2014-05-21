@@ -390,7 +390,7 @@ var Migrator = (function () {
     
     var getECCondition = function (condition) {
         return condition < 2 ? condition : condition - 2;
-    }
+    };
     
     var getECSource = function (elements, state, ec) {
         if(elements.slice(50 + (ec * 4) + (state * 124), 54 + (ec * 4) + (state * 124)).reduce(function (a, b) { return a + b; }) > 0) {
