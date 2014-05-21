@@ -338,6 +338,13 @@ var Migrator = (function () {
                 endpoint: 'process/:id/state/' + i + '/output_controllers',
                 data: parseOutputControllers(elements, i)
             });
+            
+            if(elements[0].substring(0, 7) === 'BCS-462') {
+                ret.push({
+                    endpoint: 'process/:id/state/' + i + '/boolean_outputs',
+                    data: parseBooleanOutputs(elements, i)
+                });
+            }
         }
         return ret;
     };
@@ -362,18 +369,28 @@ var Migrator = (function () {
         
         for(var i = 0; i < 4; i++) {
             var ecSource = getECSource(elements, state, i);
-            ret.push({
-                'enabled': ecSource !== 0 ? true : false,
-                'source_type': ecSource,
-                'source_number': getECSourceNumber(elements, state, i, ecSource),
-                'next_state': parseInt(elements[114 + i + (state * 124)]),
-                'condition': parseInt(elements[126 + i + (state * 124)]),
-                'value': getECValue(elements, state, i, ecSource)
-            });
+            // Only include exit conditions that are enabled.  this should prevent
+            // failures due to wonky source_numbers in unused exit conditions
+            if(ecSource !== 0) {
+                ret.push({
+                    'enabled': true,
+                    'source_type': ecSource,
+                    'source_number': getECSourceNumber(elements, state, i, ecSource),
+                    'next_state': parseInt(elements[114 + i + (state * 124)]),
+                    'condition': getECCondition(parseInt(elements[126 + i + (state * 124)])),
+                    'value': getECValue(elements, state, i, ecSource)
+                });
+                
+            } else {
+                ret.push({ enabled: false });
+            }
         }
         return ret;
     };
     
+    var getECCondition = function (condition) {
+        return condition < 2 ? condition : condition - 2;
+    }
     
     var getECSource = function (elements, state, ec) {
         if(elements.slice(50 + (ec * 4) + (state * 124), 54 + (ec * 4) + (state * 124)).reduce(function (a, b) { return a + b; }) > 0) {
@@ -453,7 +470,7 @@ var Migrator = (function () {
     var parseOutputControllers = function (elements, state) {
         var ret = [],
             sp;
-    
+        // TODO: find "controlled" and only add output_controllers if they are used.
         for(var i = 0; i < 6; i++) {
             switch(parseInt(elements[18 + i + (state * 124)])) {
                 case 0: // FALLTHROUGH
@@ -478,6 +495,19 @@ var Migrator = (function () {
         return ret;
     };
     
+    var parseBooleanOutputs = function (elements, state) {
+        var ret = [];
+        var outsEn = parseInt(elements[1035 + (state * 32)]);
+        var outsVal = parseInt(elements[1036 + (state * 32)]);
+        for(var i = 0; i < 12; i++) {
+            ret.push({
+                enabled: booleanElement(outsEn & (1 << i)),
+                value: booleanElement(outsVal & (1 << i))
+            });
+        }
+        return ret;
+        
+    };
     
     return {
         migrate: migrate
