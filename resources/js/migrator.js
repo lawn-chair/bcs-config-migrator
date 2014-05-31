@@ -323,8 +323,8 @@ var Migrator = (function () {
                         end: parseInt(elements[1039 + (i * 32)]),
                         time: parseInt(elements[1040 + (i * 32)])
                     },
-                    'state_alarm': booleanElement(elements[133 + (i * 124)]),
-                    'email_alarm': booleanElement(elements[138 + (1 * 124)]),
+                    'state_alarm': parseInt(elements[132 + (i * 124)]),
+                    'email_alarm': booleanElement(elements[137 + (i * 124)]),
                     'timers': parseTimers(elements, i)
                 }
             });
@@ -469,11 +469,12 @@ var Migrator = (function () {
     
     var parseOutputControllers = function (elements, state) {
         var ret = [],
-            sp;
+            sp,
+            mode;
         // TODO: find "controlled" and only add output_controllers if they are used.
         for(var i = 0; i < 6; i++) {
-            switch(parseInt(elements[18 + i + (state * 124)])) {
-                case 0: // FALLTHROUGH
+            mode = parseInt(elements[18 + i + (state * 124)]);
+            switch(mode) {
                 case 1:
                     sp = parseInt(elements[44 + i + (state * 124)]) ? 1 : 0;
                     break;
@@ -485,11 +486,32 @@ var Migrator = (function () {
                     sp = parseInt(elements[1014 + i + (state * 32)]);
             }
             
-            ret.push({
-                mode: parseInt(elements[18 + i + (state * 124)]),
-                input: parseInt(elements[31 + i + (state * 32)]),
-                setpoint: sp
-            });
+            if(mode !== 0) {
+                ret.push({
+                    'mode': parseInt(elements[18 + i + (state * 124)]),
+                    input: parseInt(elements[31 + i + (state * 32)]),
+                    setpoint: sp
+                });
+            } else {
+                ret.push({mode: 0});
+            }
+        }
+        
+        if(elements[0].substring(0, 7) === 'BCS-462') {
+            var outsEn = parseInt(elements[1035 + (state * 32)]);
+            var outsVal = parseInt(elements[1036 + (state * 32)]);
+            for(i = 0; i < 2; i++) {
+                if(outsEn & (1 << i)) {
+                    ret.push({
+                        'mode': 1,
+                        setpoint: booleanElement(outsVal & (1 << i))
+                    });
+                } else {
+                    ret.push({
+                        'mode': 0
+                    });
+                }
+            }
         }
         
         return ret;
@@ -499,7 +521,7 @@ var Migrator = (function () {
         var ret = [];
         var outsEn = parseInt(elements[1035 + (state * 32)]);
         var outsVal = parseInt(elements[1036 + (state * 32)]);
-        for(var i = 0; i < 12; i++) {
+        for(var i = 2; i < 12; i++) {
             ret.push({
                 enabled: booleanElement(outsEn & (1 << i)),
                 value: booleanElement(outsVal & (1 << i))

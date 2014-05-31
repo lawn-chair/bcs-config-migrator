@@ -40,6 +40,8 @@ $( document ).ready( function () {
         When a BCS url is entered, verify that it is running 4.0
     */
     $('#bcs').on('change', function (event) {
+        $('#bcs').parent().removeClass('has-success').removeClass('has-error');
+        
         $.get(event.target.value + '/api/device', function (data) {
             if(data.version === '4.0.0') {
                 bcsVersion = data.type;
