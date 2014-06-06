@@ -96,9 +96,9 @@ var Migrator = (function () {
                    name: elements[29 + i].trim(),
                    enabled: parseInt(elements[133 + (i % 4)]) & (1 << (i / 4)) ? true : false,
                    coefficients: [
-                       parseFloat(elements[coefficient + i]) * 1e-10,
-                       parseFloat(elements[coefficient + i + 4]) * 1e-10,
-                       parseFloat(elements[coefficient + i + 8]) * 1e-10
+                       parseFloat(elements[coefficient + (i % 4)]) * 1e-10,
+                       parseFloat(elements[coefficient + (i % 4) + 4]) * 1e-10,
+                       parseFloat(elements[coefficient + (i % 4) + 8]) * 1e-10
                        ]
                }
             });
