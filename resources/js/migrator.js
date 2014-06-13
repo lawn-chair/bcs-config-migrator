@@ -256,13 +256,13 @@ var Migrator = (function () {
         
         
         var getSlot = function (rung, slot) {
-            var slotData = (parseInt(elements[473 + (rung * 3) + Math.floor(slot / 2)]) >> (slot % 2 === 0 ? 0 : 4)) & 0xFFFF;
+            var slotData = (parseInt(elements[473 + (rung * 3) + Math.floor(slot / 2)]) >> (slot % 2 === 0 ? 0 : 16)) & 0xFFFF;
             
             return  {
                         wire: slotData >> 12,
-                        type: slotData & 0x0F00 >> 8,
+                        type: (slotData & 0x0F00) >> 8,
                         number: slotData & 0x7F,
-                        nc: slotData & 0x80 ? true: false
+                        nc: (slotData & 0x80) ? true: false
                     };
         };
         
