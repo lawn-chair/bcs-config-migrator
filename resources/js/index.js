@@ -99,7 +99,7 @@ $( document ).ready( function () {
         When the response comes back, pop up a modal dialog for status and
         send all the required configs to the BCS.
     */
-    $('button').on('click', function (event) {
+    $('#migrate').on('click', function (event) {
         event.preventDefault();
        
         var dialog = $('#dialog .modal-body');
