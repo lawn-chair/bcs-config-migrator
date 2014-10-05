@@ -297,13 +297,6 @@ var Migrator = (function () {
         
         for(var i = 0; i < 4; i++) {
             ret.push({
-                endpoint: 'process/:id/win/' + i,
-                data: {
-                    name: elements[14 + i].trim()
-                }
-            });
-            
-            ret.push({
                 endpoint: 'process/:id/timer/' + i,
                 data: {
                     name: elements[10 + i].trim()
@@ -405,10 +398,7 @@ var Migrator = (function () {
             
             return 3; // Din
             
-        } else if (elements.slice(98 + (ec * 4) + (state * 124), 102 + (ec * 4) + (state * 124)).reduce(function (a, b) { return a + b; }) > 0) {
-            
-            return 4; // Win
-        }
+        } 
         
         return 0; // Unused
     };
@@ -440,13 +430,6 @@ var Migrator = (function () {
                         return i;
                     } else if(parseInt(elements[82 + i + (ec * 4) + (state * 124)]) & 2) {
                         return i + 4;
-                    }
-                }
-                break;
-            case 4:
-                for(i = 0; i < 4; i++) {
-                    if(parseInt(elements[98 + i + (ec * 4) + (state * 124)]) === 1) {
-                        return i;
                     }
                 }
         }
