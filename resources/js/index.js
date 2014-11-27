@@ -1,5 +1,7 @@
-/*global Migrator */
+/*global Migrator, BCS */
 (function () {
+
+var bcs = {};
 
 var updateDevice = function(dialog, config) {
     var percent = 100 / config.length;
@@ -15,18 +17,17 @@ var updateDevice = function(dialog, config) {
         
         dialog.append('<div class="row" id="' + id + '"><div class="col-6 col-md-8">Updating ' + element.endpoint + ' ... </div></div>');
         
-        $.post($('#bcs')[0].value + "/api/" + element.endpoint, JSON.stringify(element.data), null, 'json')
-        .done(function () {
-            dialog.find('#' + id).append('<div class="col-6 col-md-4 pull-right"><span class="pull-right label label-success">Done</span></div>');
-            $(successBar).attr('aria-valuenow', parseFloat($(successBar).attr('aria-valuenow')) + percent );
-            $(successBar).css('width', $(successBar).attr('aria-valuenow') + '%');
-            next();
+        bcs.write(element.endpoint, element.data).then(function () {
+          dialog.find('#' + id).append('<div class="col-6 col-md-4 pull-right"><span class="pull-right label label-success">Done</span></div>');
+          $(successBar).attr('aria-valuenow', parseFloat($(successBar).attr('aria-valuenow')) + percent );
+          $(successBar).css('width', $(successBar).attr('aria-valuenow') + '%');
+          next();
         })
         .fail(function () {
-            dialog.find('#' + id).append('<div class="col-6 col-md-4 pull-right"><span class="pull-right label label-danger">Failed</span></div>');
-            $(dangerBar).attr('aria-valuenow', parseFloat($(dangerBar).attr('aria-valuenow')) + percent );
-            $(dangerBar).css('width', $(dangerBar).attr('aria-valuenow') + '%');
-            next();
+          dialog.find('#' + id).append('<div class="col-6 col-md-4 pull-right"><span class="pull-right label label-danger">Failed</span></div>');
+          $(dangerBar).attr('aria-valuenow', parseFloat($(dangerBar).attr('aria-valuenow')) + percent );
+          $(dangerBar).css('width', $(dangerBar).attr('aria-valuenow') + '%');
+          next();
         });
         
     });
@@ -34,44 +35,28 @@ var updateDevice = function(dialog, config) {
 
 
 $( document ).ready( function () {
-    var bcsVersion;
-    var processes;
     /*
         When a BCS url is entered, verify that it is running 4.0
     */
     $('#bcs').on('change', function (event) {
         $('#bcs').parent().removeClass('has-success').removeClass('has-error');
         
-        $.get(event.target.value + '/api/device', function (data) {
-            if(data.version === '4.0.0') {
-                bcsVersion = data.type;
-                localStorage['bcs-backup.url'] = event.target.value;
-                
-                $('#bcs').parent().addClass('has-success').removeClass('has-error');
-                
-                $('#process').html = "";
-                processes = [];
-                async.times(8, function (id, next) {
-                    $.get(event.target.value + '/api/process/' + id, function (data) {
-                        processes.push({id: id, name: data.name});
-                        next();
-                    });
-                },
-                function () {
-                    processes.sort(function (a,b) { return a.id - b.id; });
-                    processes.forEach( function (e) {
-                        $('#process').append("<option value=" + e.id + ">" + e.id + " - " + e.name + "</option>");
-                    });
-                });
-                
-            } else {
-                $('#bcs').parent().addClass('has-error').removeClass('has-success');            
-            }
-            
-            
+        bcs = new BCS.Device(event.target.value);
+        bcs.on('ready', function() {
+          localStorage['bcs-backup.url'] = event.target.value;
+          $('#bcs').parent().addClass('has-success').removeClass('has-error');
+
+          bcs.helpers.getProcesses().then(function(processes) {
+            processes.forEach(function(proc, i) {
+              $('#process').append("<option value=" + i + ">" + i + " - " + proc.name + "</option>");
+            });
+          });
+          
+          // trigger form change event to enable button if necessary
+          $('form').change();
         })
-        .fail(function () {
-            $('#bcs').parent().addClass('has-error').removeClass('has-success');
+        .on('notReady', function() {
+          $('#bcs').parent().addClass('has-error').removeClass('has-success');
         });
     });
     
@@ -87,7 +72,7 @@ $( document ).ready( function () {
         If the URL and File are valid, enable the button
     */
     $('form').on('change', function () {
-       if( $('div.has-success #bcs').length && $('div.has-success #configFile').length ) {
+       if( bcs.ready && $('div.has-success #configFile').length ) {
            $('button').removeClass('disabled');
        } else {
            $('button').addClass('disabled');
@@ -95,9 +80,8 @@ $( document ).ready( function () {
     });
     
     /*
-        When the button is clicked, submit the file to the web service.
-        When the response comes back, pop up a modal dialog for status and
-        send all the required configs to the BCS.
+        When the button is clicked, parse the file and begin migration.
+        Pop up a modal dialog for status and send all the required configs to the BCS.
     */
     $('#migrate').on('click', function (event) {
         event.preventDefault();
@@ -113,9 +97,9 @@ $( document ).ready( function () {
                
                 dialog.append('<div class="alert alert-success">Found valid <strong>' + data.type + '</strong> configuration.</div>');
                
-                if(data.device !== bcsVersion) {
+                if(data.device !== bcs.type) {
                     dialog.append('<div class="alert alert-warning">Device mismatch.  Loading anyway, may result in errors. <ul><li>Config file version: <strong>' + data.device + 
-                    '</strong></li><li>Device version: <strong>' + bcsVersion + '</strong></li></div>');
+                    '</strong></li><li>Device version: <strong>' + bcs.type + '</strong></li></div>');
                 }
                 
                 dialog.append($('#progress').html());

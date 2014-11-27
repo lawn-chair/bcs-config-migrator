@@ -8,9 +8,14 @@ html
     link(href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css", rel="stylesheet")
     link(rel='stylesheet', href='css/style.css')
     link(rel='stylesheet', href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css")
+    link(rel="icon", href="favicon.ico")
     script(src='http://code.jquery.com/jquery.js')
     script(src='http://malsup.github.com/jquery.form.js')
     script(src='//cdnjs.cloudflare.com/ajax/libs/async/0.2.7/async.min.js')
+    // bcs-promise and pre-reqs
+    script(src='//kriskowal.github.io/q/q.js')
+    script(src='//lawn-chair.github.io/bcs-promise/dist/request.js')
+    script(src='//lawn-chair.github.io/bcs-promise/dist/bcs.js')
   body
         nav.navbar.navbar-inverse
             .navbar-header
@@ -21,6 +26,8 @@ html
                         a(href="/bcs-recipes") Recipes
                     li
                         a(href="/bcs-backup") Backup/Restore
+                    li
+                        a(href="/bcs-pid-tuner") PID Tuner
                     li.active
                         a(href="#") 3.x Config Migrator
 
